@@ -1,6 +1,10 @@
-# blog engine 0.0.1-pre-release
+# blog engine
 
-This blog is powered by a single, yet fast gopher.
+This blog is powered by a single, yet fast gopher. 
 
+Basically this blog is embedded into gemini server binary and served using gemax gemini library.
+
+=> https://github.com/ninedraft/gemax gemax lib
 => https://github.com/ninedraft/blog-engine Engine repo 
+=> https://pkg.go.dev/embed go:embed
 => index.gmi home
