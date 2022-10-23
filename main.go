@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/ninedraft/blog-engine/internal/apps/myip"
+	"github.com/ninedraft/blog-engine/internal/metrics"
+	"github.com/ninedraft/blog-engine/internal/middlewares"
 	"github.com/ninedraft/blog-engine/internal/router"
 
 	"github.com/ninedraft/gemax/gemax"
@@ -36,6 +38,12 @@ func main() {
 
 	flag.Parse()
 
+	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
+	defer cancel()
+
+	go metrics.Serve(ctx)
+
 	var routes = router.Router{
 		Routes: map[string]gemax.Handler{
 			"/myip": myip.Handle,
@@ -48,18 +56,16 @@ func main() {
 	}
 
 	var server = gemax.Server{
-		Addr:    addr,
-		Handler: routes.Handle,
-		Logf:    log.Printf,
+		Addr: addr,
+		Handler: middlewares.With(routes.Handle,
+			metrics.With,
+		),
+		Logf: log.Printf,
 	}
 
 	if host != "" {
 		server.Hosts = append(server.Hosts, host)
 	}
-
-	ctx := context.Background()
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
-	defer cancel()
 
 	go func() {
 		<-ctx.Done()

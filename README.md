@@ -19,6 +19,7 @@ The main idea is to compile blog content into the blog app binary, thanks to [go
 3. Compile with `go build`;
 4. Deploy with your method of choice;
 5. Run `blog-engine -addr ... -ca-cert ... etc`;
+6. Visit <gemini://$BLOG_HOST/>;
 
 ## Configuration
 
@@ -35,3 +36,13 @@ CLI flags
 ```
 
 [Env variables](https://pkg.go.dev/runtime#hdr-Environment_Variables)
+
+## Metrics
+
+Prometheus metrics are availaible at <http://localhost:2112>.
+
+## Features
+
+1. Single static binary distribution;
+2. No dynamic filesystem access - only certs are loaded on startup; 
+3. [Prometheus metrics](#metrics);
