@@ -16,3 +16,6 @@
 
 content/
 !content/enging.gmi
+*.pem
+*.crt
+*.key
