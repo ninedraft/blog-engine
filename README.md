@@ -1,5 +1,7 @@
 # blog-engine
 
+**construction in progress**
+
 A primitive and opionated [gemini](https://gemini.circumlunar.space/) blog engine.
 
 ## Requirements
