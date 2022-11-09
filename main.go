@@ -36,7 +36,14 @@ func main() {
 	var host string
 	flag.StringVar(&host, "host", host, "optional host")
 
+	var user = os.Getenv("USER")
+	flag.StringVar(&user, "user", user, "user prefix to paths: ~$USER")
+
 	flag.Parse()
+
+	if user != "" {
+		user = "/~" + user
+	}
 
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
@@ -44,15 +51,20 @@ func main() {
 
 	go metrics.Serve(ctx)
 
+	var handleContent = (&gemax.FileSystem{
+		Prefix: "content",
+		FS:     content,
+		Logf:   log.Printf,
+	}).Serve
+
 	var routes = router.Router{
+		Group: user,
 		Routes: map[string]gemax.Handler{
 			"/myip": myip.Handle,
 		},
-		Fallback: (&gemax.FileSystem{
-			Prefix: "content",
-			FS:     content,
-			Logf:   log.Printf,
-		}).Serve,
+		Fallback: func(ctx context.Context, rw gemax.ResponseWriter, req gemax.IncomingRequest) {
+			handleContent(ctx, rw, req)
+		},
 	}
 
 	var server = gemax.Server{
