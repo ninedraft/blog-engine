@@ -6,6 +6,8 @@ import (
 	"embed"
 	"errors"
 	"flag"
+	"fmt"
+	"hash/fnv"
 	"log"
 	"net"
 	"os"
@@ -13,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ninedraft/blog-engine/internal/apps/myip"
+	"github.com/ninedraft/blog-engine/internal/fshash"
 	"github.com/ninedraft/blog-engine/internal/metrics"
 	"github.com/ninedraft/blog-engine/internal/middlewares"
 	"github.com/ninedraft/blog-engine/internal/router"
@@ -60,7 +63,8 @@ func main() {
 	var routes = router.Router{
 		Group: user,
 		Routes: map[string]gemax.Handler{
-			"/myip": myip.Handle,
+			"/myip":    myip.Handle,
+			"/version": gemax.ServeContent(gemax.MIMEGemtext, contentHash),
 		},
 		Fallback: func(ctx context.Context, rw gemax.ResponseWriter, req gemax.IncomingRequest) {
 			handleContent(ctx, rw, req)
@@ -100,4 +104,16 @@ func main() {
 	case errServe != nil:
 		panic("serving: " + errServe.Error())
 	}
+}
+
+var contentHash []byte
+
+func init() {
+	var hasher = fnv.New64a()
+	var errSum = fshash.Of(hasher, content)
+	if errSum != nil {
+		panic("content hash: " + errSum.Error())
+	}
+
+	contentHash = []byte(fmt.Sprintf("fnv64a:%x", hasher.Sum(nil)))
 }
